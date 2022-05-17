@@ -1,56 +1,46 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseNoteGroup = exports.parseTimedNote = exports.parseSimpleNote = exports.parseNote = exports.parseBlockContent = exports.parseBlock = void 0;
+exports.parseNoteGroup = exports.parseSimpleNote = exports.parseNote = exports.parseBlockContent = exports.parseBlock = void 0;
 const note_1 = require("./note");
 const parser_1 = require("./parser");
-function parseBlock(block) {
-    let soundBits = [];
-    soundBits = soundBits.concat(parseBlockContent(block.head, 0));
+function parseBlock(block, duration, soundBits) {
+    soundBits = parseBlockContent(block.head, duration, soundBits);
     block.tail.forEach(t => {
-        soundBits = soundBits.concat(parseBlock(t.content));
+        soundBits = parseBlock(t.content, duration, soundBits);
     });
     return soundBits;
 }
 exports.parseBlock = parseBlock;
-function parseBlockContent(blockContent, duration) {
+function parseBlockContent(blockContent, duration, soundBits) {
     if ((blockContent.kind === parser_1.ASTKinds.BLOCK_CONTENT_2)) {
-        let soundBits = [];
-        soundBits.push(parseNote(blockContent.value, duration));
+        soundBits.push(parseNote(blockContent.note, duration));
         return soundBits;
     }
     else {
-        return parseNoteGroup(blockContent.value);
+        return parseNoteGroup(blockContent.noteGroup, duration, soundBits);
     }
 }
 exports.parseBlockContent = parseBlockContent;
 function parseNote(note, duration) {
-    if (typeof note === typeof parser_1.ASTKinds.NOTE_2) {
-        return parseSimpleNote(note.value, duration);
+    let finalDuration = duration;
+    if (note.duration !== null) {
+        finalDuration = parseInt(note.duration.value);
     }
-    else {
-        return parseTimedNote(note.value);
-    }
+    return parseSimpleNote(note.simpleNote, finalDuration);
 }
 exports.parseNote = parseNote;
 function parseSimpleNote(simpleNote, duration) {
-    if (simpleNote.kind === parser_1.ASTKinds.SIMPLE_NOTE_1) {
-        return new note_1.Note({ note: parseInt(simpleNote.value.value), duration });
+    if (simpleNote.kind === parser_1.ASTKinds.SIMPLE_NOTE_2) {
+        return new note_1.Note({ note: parseInt(simpleNote.note), duration: duration });
     }
     else {
         return new note_1.Rest(duration);
     }
 }
 exports.parseSimpleNote = parseSimpleNote;
-function parseTimedNote(timedNote) {
-    return parseSimpleNote(timedNote.value, timedNote.duration);
-}
-exports.parseTimedNote = parseTimedNote;
-function parseNoteGroup(noteGroup) {
-    let soundBits = [];
-    noteGroup.block.forEach((t) => {
-        soundBits = soundBits.concat(parseBlock(t));
-    });
-    return soundBits;
+function parseNoteGroup(noteGroup, duration, soundBits) {
+    var _a;
+    return parseBlock(noteGroup.block, parseInt(((_a = noteGroup.duration) !== null && _a !== void 0 ? _a : '0').value), soundBits);
 }
 exports.parseNoteGroup = parseNoteGroup;
 //# sourceMappingURL=song.parser.js.map

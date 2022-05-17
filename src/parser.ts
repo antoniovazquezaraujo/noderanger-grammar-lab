@@ -3,12 +3,11 @@
 * BLOCK:=
 *     head = BLOCK_CONTENT
 *     tail = {NOTE_SEPARATOR content = BLOCK}*
-* BLOCK_CONTENT:= value= NOTE_GROUP | value= NOTE 
-* NOTE:= value=TIMED_NOTE | value=SIMPLE_NOTE 
-* SIMPLE_NOTE:= value=NOTE_VALUE | value=SILENCE_SIGN
-* TIMED_NOTE := 
-*     duration= DURATION 
-*     value=SIMPLE_NOTE  
+* BLOCK_CONTENT:= noteGroup= {NOTE_GROUP} |  note={NOTE} 
+* NOTE:= 
+*     duration = {DURATION}? 
+*     simpleNote= SIMPLE_NOTE 
+* SIMPLE_NOTE:= silence={SILENCE_SIGN} | note={NOTE_VALUE} 
 * NOTE_GROUP:= 
 *     duration= DURATION 
 *     GROUP_START 
@@ -17,7 +16,7 @@
 * GROUP_START:= '\('
 * GROUP_END:= '\)'
 * DURATION:= value = '[0-9]+' DURATION_SIGN
-* NOTE_VALUE:= value='-?\d+'
+* NOTE_VALUE:= '-?\d+'
 * DURATION_SIGN:= ':'
 * SILENCE_SIGN:= 's'
 * NOTE_SEPARATOR:= ' '
@@ -32,11 +31,14 @@ export enum ASTKinds {
     BLOCK_$0 = "BLOCK_$0",
     BLOCK_CONTENT_1 = "BLOCK_CONTENT_1",
     BLOCK_CONTENT_2 = "BLOCK_CONTENT_2",
-    NOTE_1 = "NOTE_1",
-    NOTE_2 = "NOTE_2",
+    BLOCK_CONTENT_$0 = "BLOCK_CONTENT_$0",
+    BLOCK_CONTENT_$1 = "BLOCK_CONTENT_$1",
+    NOTE = "NOTE",
+    NOTE_$0 = "NOTE_$0",
     SIMPLE_NOTE_1 = "SIMPLE_NOTE_1",
     SIMPLE_NOTE_2 = "SIMPLE_NOTE_2",
-    TIMED_NOTE = "TIMED_NOTE",
+    SIMPLE_NOTE_$0 = "SIMPLE_NOTE_$0",
+    SIMPLE_NOTE_$1 = "SIMPLE_NOTE_$1",
     NOTE_GROUP = "NOTE_GROUP",
     GROUP_START = "GROUP_START",
     GROUP_END = "GROUP_END",
@@ -58,35 +60,31 @@ export interface BLOCK_$0 {
 export type BLOCK_CONTENT = BLOCK_CONTENT_1 | BLOCK_CONTENT_2;
 export interface BLOCK_CONTENT_1 {
     kind: ASTKinds.BLOCK_CONTENT_1;
-    value: NOTE_GROUP;
+    noteGroup: BLOCK_CONTENT_$0;
 }
 export interface BLOCK_CONTENT_2 {
     kind: ASTKinds.BLOCK_CONTENT_2;
-    value: NOTE;
+    note: BLOCK_CONTENT_$1;
 }
-export type NOTE = NOTE_1 | NOTE_2;
-export interface NOTE_1 {
-    kind: ASTKinds.NOTE_1;
-    value: TIMED_NOTE;
+export type BLOCK_CONTENT_$0 = NOTE_GROUP;
+export type BLOCK_CONTENT_$1 = NOTE;
+export interface NOTE {
+    kind: ASTKinds.NOTE;
+    duration: Nullable<NOTE_$0>;
+    simpleNote: SIMPLE_NOTE;
 }
-export interface NOTE_2 {
-    kind: ASTKinds.NOTE_2;
-    value: SIMPLE_NOTE;
-}
+export type NOTE_$0 = DURATION;
 export type SIMPLE_NOTE = SIMPLE_NOTE_1 | SIMPLE_NOTE_2;
 export interface SIMPLE_NOTE_1 {
     kind: ASTKinds.SIMPLE_NOTE_1;
-    value: NOTE_VALUE;
+    silence: SIMPLE_NOTE_$0;
 }
 export interface SIMPLE_NOTE_2 {
     kind: ASTKinds.SIMPLE_NOTE_2;
-    value: SILENCE_SIGN;
+    note: SIMPLE_NOTE_$1;
 }
-export interface TIMED_NOTE {
-    kind: ASTKinds.TIMED_NOTE;
-    duration: DURATION;
-    value: SIMPLE_NOTE;
-}
+export type SIMPLE_NOTE_$0 = SILENCE_SIGN;
+export type SIMPLE_NOTE_$1 = NOTE_VALUE;
 export interface NOTE_GROUP {
     kind: ASTKinds.NOTE_GROUP;
     duration: DURATION;
@@ -98,10 +96,7 @@ export interface DURATION {
     kind: ASTKinds.DURATION;
     value: string;
 }
-export interface NOTE_VALUE {
-    kind: ASTKinds.NOTE_VALUE;
-    value: string;
-}
+export type NOTE_VALUE = string;
 export type DURATION_SIGN = string;
 export type SILENCE_SIGN = string;
 export type NOTE_SEPARATOR = string;
@@ -160,12 +155,12 @@ export class Parser {
     public matchBLOCK_CONTENT_1($$dpth: number, $$cr?: ErrorTracker): Nullable<BLOCK_CONTENT_1> {
         return this.run<BLOCK_CONTENT_1>($$dpth,
             () => {
-                let $scope$value: Nullable<NOTE_GROUP>;
+                let $scope$noteGroup: Nullable<BLOCK_CONTENT_$0>;
                 let $$res: Nullable<BLOCK_CONTENT_1> = null;
                 if (true
-                    && ($scope$value = this.matchNOTE_GROUP($$dpth + 1, $$cr)) !== null
+                    && ($scope$noteGroup = this.matchBLOCK_CONTENT_$0($$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.BLOCK_CONTENT_1, value: $scope$value};
+                    $$res = {kind: ASTKinds.BLOCK_CONTENT_1, noteGroup: $scope$noteGroup};
                 }
                 return $$res;
             });
@@ -173,47 +168,39 @@ export class Parser {
     public matchBLOCK_CONTENT_2($$dpth: number, $$cr?: ErrorTracker): Nullable<BLOCK_CONTENT_2> {
         return this.run<BLOCK_CONTENT_2>($$dpth,
             () => {
-                let $scope$value: Nullable<NOTE>;
+                let $scope$note: Nullable<BLOCK_CONTENT_$1>;
                 let $$res: Nullable<BLOCK_CONTENT_2> = null;
                 if (true
-                    && ($scope$value = this.matchNOTE($$dpth + 1, $$cr)) !== null
+                    && ($scope$note = this.matchBLOCK_CONTENT_$1($$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.BLOCK_CONTENT_2, value: $scope$value};
+                    $$res = {kind: ASTKinds.BLOCK_CONTENT_2, note: $scope$note};
                 }
                 return $$res;
             });
+    }
+    public matchBLOCK_CONTENT_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<BLOCK_CONTENT_$0> {
+        return this.matchNOTE_GROUP($$dpth + 1, $$cr);
+    }
+    public matchBLOCK_CONTENT_$1($$dpth: number, $$cr?: ErrorTracker): Nullable<BLOCK_CONTENT_$1> {
+        return this.matchNOTE($$dpth + 1, $$cr);
     }
     public matchNOTE($$dpth: number, $$cr?: ErrorTracker): Nullable<NOTE> {
-        return this.choice<NOTE>([
-            () => this.matchNOTE_1($$dpth + 1, $$cr),
-            () => this.matchNOTE_2($$dpth + 1, $$cr),
-        ]);
-    }
-    public matchNOTE_1($$dpth: number, $$cr?: ErrorTracker): Nullable<NOTE_1> {
-        return this.run<NOTE_1>($$dpth,
+        return this.run<NOTE>($$dpth,
             () => {
-                let $scope$value: Nullable<TIMED_NOTE>;
-                let $$res: Nullable<NOTE_1> = null;
+                let $scope$duration: Nullable<Nullable<NOTE_$0>>;
+                let $scope$simpleNote: Nullable<SIMPLE_NOTE>;
+                let $$res: Nullable<NOTE> = null;
                 if (true
-                    && ($scope$value = this.matchTIMED_NOTE($$dpth + 1, $$cr)) !== null
+                    && (($scope$duration = this.matchNOTE_$0($$dpth + 1, $$cr)) || true)
+                    && ($scope$simpleNote = this.matchSIMPLE_NOTE($$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.NOTE_1, value: $scope$value};
+                    $$res = {kind: ASTKinds.NOTE, duration: $scope$duration, simpleNote: $scope$simpleNote};
                 }
                 return $$res;
             });
     }
-    public matchNOTE_2($$dpth: number, $$cr?: ErrorTracker): Nullable<NOTE_2> {
-        return this.run<NOTE_2>($$dpth,
-            () => {
-                let $scope$value: Nullable<SIMPLE_NOTE>;
-                let $$res: Nullable<NOTE_2> = null;
-                if (true
-                    && ($scope$value = this.matchSIMPLE_NOTE($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.NOTE_2, value: $scope$value};
-                }
-                return $$res;
-            });
+    public matchNOTE_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<NOTE_$0> {
+        return this.matchDURATION($$dpth + 1, $$cr);
     }
     public matchSIMPLE_NOTE($$dpth: number, $$cr?: ErrorTracker): Nullable<SIMPLE_NOTE> {
         return this.choice<SIMPLE_NOTE>([
@@ -224,12 +211,12 @@ export class Parser {
     public matchSIMPLE_NOTE_1($$dpth: number, $$cr?: ErrorTracker): Nullable<SIMPLE_NOTE_1> {
         return this.run<SIMPLE_NOTE_1>($$dpth,
             () => {
-                let $scope$value: Nullable<NOTE_VALUE>;
+                let $scope$silence: Nullable<SIMPLE_NOTE_$0>;
                 let $$res: Nullable<SIMPLE_NOTE_1> = null;
                 if (true
-                    && ($scope$value = this.matchNOTE_VALUE($$dpth + 1, $$cr)) !== null
+                    && ($scope$silence = this.matchSIMPLE_NOTE_$0($$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.SIMPLE_NOTE_1, value: $scope$value};
+                    $$res = {kind: ASTKinds.SIMPLE_NOTE_1, silence: $scope$silence};
                 }
                 return $$res;
             });
@@ -237,30 +224,21 @@ export class Parser {
     public matchSIMPLE_NOTE_2($$dpth: number, $$cr?: ErrorTracker): Nullable<SIMPLE_NOTE_2> {
         return this.run<SIMPLE_NOTE_2>($$dpth,
             () => {
-                let $scope$value: Nullable<SILENCE_SIGN>;
+                let $scope$note: Nullable<SIMPLE_NOTE_$1>;
                 let $$res: Nullable<SIMPLE_NOTE_2> = null;
                 if (true
-                    && ($scope$value = this.matchSILENCE_SIGN($$dpth + 1, $$cr)) !== null
+                    && ($scope$note = this.matchSIMPLE_NOTE_$1($$dpth + 1, $$cr)) !== null
                 ) {
-                    $$res = {kind: ASTKinds.SIMPLE_NOTE_2, value: $scope$value};
+                    $$res = {kind: ASTKinds.SIMPLE_NOTE_2, note: $scope$note};
                 }
                 return $$res;
             });
     }
-    public matchTIMED_NOTE($$dpth: number, $$cr?: ErrorTracker): Nullable<TIMED_NOTE> {
-        return this.run<TIMED_NOTE>($$dpth,
-            () => {
-                let $scope$duration: Nullable<DURATION>;
-                let $scope$value: Nullable<SIMPLE_NOTE>;
-                let $$res: Nullable<TIMED_NOTE> = null;
-                if (true
-                    && ($scope$duration = this.matchDURATION($$dpth + 1, $$cr)) !== null
-                    && ($scope$value = this.matchSIMPLE_NOTE($$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.TIMED_NOTE, duration: $scope$duration, value: $scope$value};
-                }
-                return $$res;
-            });
+    public matchSIMPLE_NOTE_$0($$dpth: number, $$cr?: ErrorTracker): Nullable<SIMPLE_NOTE_$0> {
+        return this.matchSILENCE_SIGN($$dpth + 1, $$cr);
+    }
+    public matchSIMPLE_NOTE_$1($$dpth: number, $$cr?: ErrorTracker): Nullable<SIMPLE_NOTE_$1> {
+        return this.matchNOTE_VALUE($$dpth + 1, $$cr);
     }
     public matchNOTE_GROUP($$dpth: number, $$cr?: ErrorTracker): Nullable<NOTE_GROUP> {
         return this.run<NOTE_GROUP>($$dpth,
@@ -300,17 +278,7 @@ export class Parser {
             });
     }
     public matchNOTE_VALUE($$dpth: number, $$cr?: ErrorTracker): Nullable<NOTE_VALUE> {
-        return this.run<NOTE_VALUE>($$dpth,
-            () => {
-                let $scope$value: Nullable<string>;
-                let $$res: Nullable<NOTE_VALUE> = null;
-                if (true
-                    && ($scope$value = this.regexAccept(String.raw`(?:-?\d+)`, $$dpth + 1, $$cr)) !== null
-                ) {
-                    $$res = {kind: ASTKinds.NOTE_VALUE, value: $scope$value};
-                }
-                return $$res;
-            });
+        return this.regexAccept(String.raw`(?:-?\d+)`, $$dpth + 1, $$cr);
     }
     public matchDURATION_SIGN($$dpth: number, $$cr?: ErrorTracker): Nullable<DURATION_SIGN> {
         return this.regexAccept(String.raw`(?::)`, $$dpth + 1, $$cr);

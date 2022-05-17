@@ -1,12 +1,11 @@
 BLOCK:=
     head = BLOCK_CONTENT
     tail = {NOTE_SEPARATOR content = BLOCK}*
-BLOCK_CONTENT:= value= NOTE_GROUP | value= NOTE 
-NOTE:= value=TIMED_NOTE | value=SIMPLE_NOTE 
-SIMPLE_NOTE:= value=NOTE_VALUE | value=SILENCE_SIGN
-TIMED_NOTE := 
-    duration= DURATION 
-    value=SIMPLE_NOTE  
+BLOCK_CONTENT:= noteGroup= {NOTE_GROUP} |  note={NOTE} 
+NOTE:= 
+    duration = {DURATION}? 
+    simpleNote= SIMPLE_NOTE 
+SIMPLE_NOTE:= silence={SILENCE_SIGN} | note={NOTE_VALUE} 
 NOTE_GROUP:= 
     duration= DURATION 
     GROUP_START 
@@ -15,7 +14,7 @@ NOTE_GROUP:=
 GROUP_START:= '\('
 GROUP_END:= '\)'
 DURATION:= value = '[0-9]+' DURATION_SIGN
-NOTE_VALUE:= value='-?\d+'
+NOTE_VALUE:= '-?\d+'
 DURATION_SIGN:= ':'
 SILENCE_SIGN:= 's'
 NOTE_SEPARATOR:= ' '

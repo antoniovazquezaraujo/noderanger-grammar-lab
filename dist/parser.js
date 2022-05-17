@@ -7,11 +7,14 @@ var ASTKinds;
     ASTKinds["BLOCK_$0"] = "BLOCK_$0";
     ASTKinds["BLOCK_CONTENT_1"] = "BLOCK_CONTENT_1";
     ASTKinds["BLOCK_CONTENT_2"] = "BLOCK_CONTENT_2";
-    ASTKinds["NOTE_1"] = "NOTE_1";
-    ASTKinds["NOTE_2"] = "NOTE_2";
+    ASTKinds["BLOCK_CONTENT_$0"] = "BLOCK_CONTENT_$0";
+    ASTKinds["BLOCK_CONTENT_$1"] = "BLOCK_CONTENT_$1";
+    ASTKinds["NOTE"] = "NOTE";
+    ASTKinds["NOTE_$0"] = "NOTE_$0";
     ASTKinds["SIMPLE_NOTE_1"] = "SIMPLE_NOTE_1";
     ASTKinds["SIMPLE_NOTE_2"] = "SIMPLE_NOTE_2";
-    ASTKinds["TIMED_NOTE"] = "TIMED_NOTE";
+    ASTKinds["SIMPLE_NOTE_$0"] = "SIMPLE_NOTE_$0";
+    ASTKinds["SIMPLE_NOTE_$1"] = "SIMPLE_NOTE_$1";
     ASTKinds["NOTE_GROUP"] = "NOTE_GROUP";
     ASTKinds["GROUP_START"] = "GROUP_START";
     ASTKinds["GROUP_END"] = "GROUP_END";
@@ -69,53 +72,47 @@ class Parser {
     }
     matchBLOCK_CONTENT_1($$dpth, $$cr) {
         return this.run($$dpth, () => {
-            let $scope$value;
+            let $scope$noteGroup;
             let $$res = null;
             if (true
-                && ($scope$value = this.matchNOTE_GROUP($$dpth + 1, $$cr)) !== null) {
-                $$res = { kind: ASTKinds.BLOCK_CONTENT_1, value: $scope$value };
+                && ($scope$noteGroup = this.matchBLOCK_CONTENT_$0($$dpth + 1, $$cr)) !== null) {
+                $$res = { kind: ASTKinds.BLOCK_CONTENT_1, noteGroup: $scope$noteGroup };
             }
             return $$res;
         });
     }
     matchBLOCK_CONTENT_2($$dpth, $$cr) {
         return this.run($$dpth, () => {
-            let $scope$value;
+            let $scope$note;
             let $$res = null;
             if (true
-                && ($scope$value = this.matchNOTE($$dpth + 1, $$cr)) !== null) {
-                $$res = { kind: ASTKinds.BLOCK_CONTENT_2, value: $scope$value };
+                && ($scope$note = this.matchBLOCK_CONTENT_$1($$dpth + 1, $$cr)) !== null) {
+                $$res = { kind: ASTKinds.BLOCK_CONTENT_2, note: $scope$note };
             }
             return $$res;
         });
+    }
+    matchBLOCK_CONTENT_$0($$dpth, $$cr) {
+        return this.matchNOTE_GROUP($$dpth + 1, $$cr);
+    }
+    matchBLOCK_CONTENT_$1($$dpth, $$cr) {
+        return this.matchNOTE($$dpth + 1, $$cr);
     }
     matchNOTE($$dpth, $$cr) {
-        return this.choice([
-            () => this.matchNOTE_1($$dpth + 1, $$cr),
-            () => this.matchNOTE_2($$dpth + 1, $$cr),
-        ]);
-    }
-    matchNOTE_1($$dpth, $$cr) {
         return this.run($$dpth, () => {
-            let $scope$value;
+            let $scope$duration;
+            let $scope$simpleNote;
             let $$res = null;
             if (true
-                && ($scope$value = this.matchTIMED_NOTE($$dpth + 1, $$cr)) !== null) {
-                $$res = { kind: ASTKinds.NOTE_1, value: $scope$value };
+                && (($scope$duration = this.matchNOTE_$0($$dpth + 1, $$cr)) || true)
+                && ($scope$simpleNote = this.matchSIMPLE_NOTE($$dpth + 1, $$cr)) !== null) {
+                $$res = { kind: ASTKinds.NOTE, duration: $scope$duration, simpleNote: $scope$simpleNote };
             }
             return $$res;
         });
     }
-    matchNOTE_2($$dpth, $$cr) {
-        return this.run($$dpth, () => {
-            let $scope$value;
-            let $$res = null;
-            if (true
-                && ($scope$value = this.matchSIMPLE_NOTE($$dpth + 1, $$cr)) !== null) {
-                $$res = { kind: ASTKinds.NOTE_2, value: $scope$value };
-            }
-            return $$res;
-        });
+    matchNOTE_$0($$dpth, $$cr) {
+        return this.matchDURATION($$dpth + 1, $$cr);
     }
     matchSIMPLE_NOTE($$dpth, $$cr) {
         return this.choice([
@@ -125,38 +122,31 @@ class Parser {
     }
     matchSIMPLE_NOTE_1($$dpth, $$cr) {
         return this.run($$dpth, () => {
-            let $scope$value;
+            let $scope$silence;
             let $$res = null;
             if (true
-                && ($scope$value = this.matchNOTE_VALUE($$dpth + 1, $$cr)) !== null) {
-                $$res = { kind: ASTKinds.SIMPLE_NOTE_1, value: $scope$value };
+                && ($scope$silence = this.matchSIMPLE_NOTE_$0($$dpth + 1, $$cr)) !== null) {
+                $$res = { kind: ASTKinds.SIMPLE_NOTE_1, silence: $scope$silence };
             }
             return $$res;
         });
     }
     matchSIMPLE_NOTE_2($$dpth, $$cr) {
         return this.run($$dpth, () => {
-            let $scope$value;
+            let $scope$note;
             let $$res = null;
             if (true
-                && ($scope$value = this.matchSILENCE_SIGN($$dpth + 1, $$cr)) !== null) {
-                $$res = { kind: ASTKinds.SIMPLE_NOTE_2, value: $scope$value };
+                && ($scope$note = this.matchSIMPLE_NOTE_$1($$dpth + 1, $$cr)) !== null) {
+                $$res = { kind: ASTKinds.SIMPLE_NOTE_2, note: $scope$note };
             }
             return $$res;
         });
     }
-    matchTIMED_NOTE($$dpth, $$cr) {
-        return this.run($$dpth, () => {
-            let $scope$duration;
-            let $scope$value;
-            let $$res = null;
-            if (true
-                && ($scope$duration = this.matchDURATION($$dpth + 1, $$cr)) !== null
-                && ($scope$value = this.matchSIMPLE_NOTE($$dpth + 1, $$cr)) !== null) {
-                $$res = { kind: ASTKinds.TIMED_NOTE, duration: $scope$duration, value: $scope$value };
-            }
-            return $$res;
-        });
+    matchSIMPLE_NOTE_$0($$dpth, $$cr) {
+        return this.matchSILENCE_SIGN($$dpth + 1, $$cr);
+    }
+    matchSIMPLE_NOTE_$1($$dpth, $$cr) {
+        return this.matchNOTE_VALUE($$dpth + 1, $$cr);
     }
     matchNOTE_GROUP($$dpth, $$cr) {
         return this.run($$dpth, () => {
@@ -192,15 +182,7 @@ class Parser {
         });
     }
     matchNOTE_VALUE($$dpth, $$cr) {
-        return this.run($$dpth, () => {
-            let $scope$value;
-            let $$res = null;
-            if (true
-                && ($scope$value = this.regexAccept(String.raw `(?:-?\d+)`, $$dpth + 1, $$cr)) !== null) {
-                $$res = { kind: ASTKinds.NOTE_VALUE, value: $scope$value };
-            }
-            return $$res;
-        });
+        return this.regexAccept(String.raw `(?:-?\d+)`, $$dpth + 1, $$cr);
     }
     matchDURATION_SIGN($$dpth, $$cr) {
         return this.regexAccept(String.raw `(?::)`, $$dpth + 1, $$cr);
